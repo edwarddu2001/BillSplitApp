@@ -1,4 +1,4 @@
-﻿@using BillSplit.Data 
+﻿@using BillSplit.Data
 @page "/calculator"
 
 <EditForm Model="@item" OnValidSubmit="AddButtonClicked" OnInvalidSubmit="()=>OnInvalidSubmit()">
@@ -7,15 +7,14 @@
         <MudCardContent>
             <MudTextField @bind-Value="item.Name" Label="Name" Variant="Variant.Text" For="@(() => item.Name)" />
             <MudTextField @bind-Value="item.Price" Label="Price" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Warning" Variant="Variant.Text" For="@(() => item.Price)" />
-            <MudRadio>
-
-            </MudRadio>
+            <MudSelect T="string" Label="People Paying" MultiSelection="true" SelectAll="true" @bind-SelectedValues="item.Payers">
+                @foreach (string person in people)
+                {
+                    <MudSelectItem T="string" Value="@person">@person</MudSelectItem>
+                }
+            </MudSelect>
             <br />
             <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Add</MudButton>
-            @if (@addError)
-            {
-                <MudAlert Severity="Severity.Error" Class="mt-5">@errorMessage</MudAlert>
-            }
         </MudCardContent>
     </MudCard>
 </EditForm>
@@ -27,16 +26,19 @@
     <HeaderContent>
         <MudTh>Name</MudTh>
         <MudTh>Price</MudTh>
+        <MudTd>Payers</MudTd>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="Price">$@context.Price</MudTd>
-        <MudTd>
-            <MudFab Color="Color.Secondary" Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(()=>RemoveButtonClicked(@context.Name, @context.Price))"></MudFab>
-            @if (@removeError)
+        <MudTd DataLabel="Payers">
+            @foreach (string payer in context.Payers)
             {
-                <MudAlert Severity="Severity.Error" Class="mt-5">@errorMessage</MudAlert>
+                <MudText>@payer</MudText>
             }
+        </MudTd>
+        <MudTd>
+            <MudFab Color="Color.Secondary" Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(()=>RemoveButtonClicked(@context))"></MudFab>
         </MudTd>
     </RowTemplate>
     <FooterContent>
@@ -51,13 +53,23 @@
     private List<BillItem> items;
     private bool addError;
     private bool removeError;
-    private string errorMessage;
+    private HashSet<string> people;
 
     protected override void OnInitialized()
     {
-        item = new();
-        items = new();
+        ResetItem();
         ResetErrors();
+        items = new();
+        people = new();
+        people.Add("Harun");
+        people.Add("Tausif");
+        people.Add("Edward");
+        people.Add("Eric");
+    }
+
+    private void ResetItem()
+    {
+        item = new();
     }
 
     private void ResetErrors()
@@ -68,12 +80,13 @@
 
     private void AddButtonClicked()
     {
-        items.Add(item);
+        items.Add(new BillItem(item.Name, item.Price, item.Payers));
+        ResetItem();
     }
 
-    private void RemoveButtonClicked(string name, double price)
+    private void RemoveButtonClicked(BillItem item)
     {
-
+        items.Remove(item);
     }
 
     private void OnInvalidSubmit()

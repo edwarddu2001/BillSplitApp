@@ -15,7 +15,20 @@ namespace BillSplit.Data
         [Range(0, double.MaxValue, ErrorMessage = "Enter a Positive Number")]
         public double Price { get; set; }
 
-        [Required(ErrorMessage = "People Paying are Required")]
-        public List<string> Names { get; set; }
+        [Required(ErrorMessage = "Payers are Required")]
+        [MinLength(1, ErrorMessage = "Must have at least 1 Payer")]
+        public HashSet<string> Payers { get; set; }
+
+        public BillItem()
+        {
+
+        }
+
+        public BillItem(string name, double price, HashSet<string> payers)
+        {
+            Name = name;
+            Price = price;
+            Payers = payers;
+        }
     }
 }

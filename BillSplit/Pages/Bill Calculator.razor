@@ -1,0 +1,83 @@
+﻿@using BillSplit.Data 
+@page "/calculator"
+
+<EditForm Model="@item" OnValidSubmit="AddButtonClicked" OnInvalidSubmit="()=>OnInvalidSubmit()">
+    <DataAnnotationsValidator />
+    <MudCard Elevation="25" Class="my-5">
+        <MudCardContent>
+            <MudTextField @bind-Value="item.Name" Label="Name" Variant="Variant.Text" For="@(() => item.Name)" />
+            <MudTextField @bind-Value="item.Price" Label="Price" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Warning" Variant="Variant.Text" For="@(() => item.Price)" />
+            <MudRadio>
+
+            </MudRadio>
+            <br />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Add</MudButton>
+            @if (@addError)
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-5">@errorMessage</MudAlert>
+            }
+        </MudCardContent>
+    </MudCard>
+</EditForm>
+
+<MudTable Items="@items" Hover="true" Elevation="25" Class="my-5">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Calculator</MudText>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Price</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Price">$@context.Price</MudTd>
+        <MudTd>
+            <MudFab Color="Color.Secondary" Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(()=>RemoveButtonClicked(@context.Name, @context.Price))"></MudFab>
+            @if (@removeError)
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-5">@errorMessage</MudAlert>
+            }
+        </MudTd>
+    </RowTemplate>
+    <FooterContent>
+
+    </FooterContent>
+</MudTable>
+
+<br />
+
+@code {
+    private BillItem item;
+    private List<BillItem> items;
+    private bool addError;
+    private bool removeError;
+    private string errorMessage;
+
+    protected override void OnInitialized()
+    {
+        item = new();
+        items = new();
+        ResetErrors();
+    }
+
+    private void ResetErrors()
+    {
+        addError = false;
+        removeError = false;
+    }
+
+    private void AddButtonClicked()
+    {
+        items.Add(item);
+    }
+
+    private void RemoveButtonClicked(string name, double price)
+    {
+
+    }
+
+    private void OnInvalidSubmit()
+    {
+        addError = true;
+    }
+}

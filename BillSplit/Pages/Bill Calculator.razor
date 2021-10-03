@@ -8,20 +8,20 @@
             <MudTextField @bind-Value="item.Name" Label="Name" Variant="Variant.Text" For="@(() => item.Name)" />
             <MudTextField @bind-Value="item.Price" Label="Price" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Warning" Variant="Variant.Text" For="@(() => item.Price)" />
             <MudSelect T="string" Label="People Paying" MultiSelection="true" SelectAll="true" @bind-SelectedValues="item.Payers">
-                @foreach (string person in people)
+                @foreach (string person in people.Keys)
                 {
                     <MudSelectItem T="string" Value="@person">@person</MudSelectItem>
                 }
             </MudSelect>
-            <br />
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Add</MudButton>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="mt-5">Add</MudButton>
         </MudCardContent>
     </MudCard>
 </EditForm>
 
 <MudTable Items="@items" Hover="true" Elevation="25" Class="my-5">
     <ToolBarContent>
-        <MudText Typo="Typo.h6">Calculator</MudText>
+        <MudText Typo="Typo.h6">Item List</MudText>
     </ToolBarContent>
     <HeaderContent>
         <MudTh>Name</MudTh>
@@ -41,19 +41,32 @@
             <MudFab Color="Color.Secondary" Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(()=>RemoveButtonClicked(@context))"></MudFab>
         </MudTd>
     </RowTemplate>
-    <FooterContent>
-
-    </FooterContent>
 </MudTable>
 
-<br />
+<MudTable Items="@people" Hover="true" Elevation="25" Class="my-5">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Calculator</MudText>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>People</MudTh>
+        <MudTh>Payment</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="People">@context.Key</MudTd>
+        <MudTd DataLabel="Payment">$@context.Value</MudTd>
+    </RowTemplate>
+    <FooterContent>
+        <MudText Class="my-5">Total: $@total</MudText>
+    </FooterContent>
+</MudTable>
 
 @code {
     private BillItem item;
     private List<BillItem> items;
     private bool addError;
     private bool removeError;
-    private HashSet<string> people;
+    private double total;
+    private Dictionary<string, double> people;
 
     protected override void OnInitialized()
     {
@@ -61,10 +74,11 @@
         ResetErrors();
         items = new();
         people = new();
-        people.Add("Harun");
-        people.Add("Tausif");
-        people.Add("Edward");
-        people.Add("Eric");
+        total = 0;
+        people["Harun"] = 0;
+        people["Tausif"] = 0;
+        people["Edward"] = 0;
+        people["Eric"] = 0;
     }
 
     private void ResetItem()
@@ -81,16 +95,42 @@
     private void AddButtonClicked()
     {
         items.Add(new BillItem(item.Name, item.Price, item.Payers));
+        CalculatePay(item, true);
         ResetItem();
     }
 
-    private void RemoveButtonClicked(BillItem item)
+    private void RemoveButtonClicked(BillItem itemRemove)
     {
-        items.Remove(item);
+        items.Remove(itemRemove);
+        CalculatePay(itemRemove, false);
     }
 
     private void OnInvalidSubmit()
     {
         addError = true;
+    }
+
+    private void CalculatePay(BillItem item, bool add)
+    {
+        int numPayers = item.Payers.Count;
+
+        if (add)
+        {
+            total += item.Price;
+
+            foreach (string person in item.Payers)
+            {
+                people[person] += (item.Price / numPayers);
+            }
+        }
+        else
+        {
+            total -= item.Price;
+
+            foreach (string person in item.Payers)
+            {
+                people[person] -= (item.Price / numPayers);
+            }
+        }
     }
 }
